@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jawi Reading Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .menu {
+            display: block;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .mode-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .easy-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .hard-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .game {
+            display: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .progress {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .jawi-word {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #333;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            font-family: 'Arabic Typesetting', 'Amiri', 'Scheherazade New', 'Noto Sans Arabic', serif;
+        }
+
+        .timer-container {
+            margin: 20px 0;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFC107, #f44336);
+            transition: width 0.1s linear;
+            border-radius: 4px;
+        }
+
+        .input-section {
+            margin: 30px 0;
+        }
+
+        .rumi-input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .rumi-input:focus {
+            border-color: #667eea;
+        }
+
+        .feedback {
+            margin: 20px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .correct {
+            color: #4CAF50;
+            animation: bounceIn 0.5s ease;
+        }
+
+        .incorrect {
+            color: #f44336;
+            animation: shakeX 0.5s ease;
+        }
+
+        .timeout {
+            color: #FF9800;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .final-score {
+            font-size: 2em;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .wrong-words {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .wrong-words h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .wrong-word-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f5f5f5;
+            border-radius: 5px;
+            border-left: 4px solid #f44336;
+        }
+
+        .wrong-jawi {
+            font-size: 1.5em;
+            font-weight: bold;
+            direction: rtl;
+        }
+
+        .wrong-rumi {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shakeX {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jawi Reading Practice</h1>
+        
+        <!-- Menu Screen -->
+        <div class="menu" id="menu">
+            <div class="mode-buttons">
+                <button class="mode-btn easy-btn" onclick="startGame('easy')">
+                    Easy<br><small>(Freq. 1-100)</small>
+                </button>
+                <button class="mode-btn hard-btn" onclick="startGame('hard')">
+                    Hard<br><small>(Freq. 100+)</small>
+                </button>
+            </div>
+            <p>Practice reading Jawi script! Look at the Arabic text and type the Rumi transliteration.</p>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game" id="game">
+            <div class="game-header">
+                <div class="score">Score: <span id="current-score">0</span>/20</div>
+                <div class="progress">Word <span id="word-number">1</span> of 20</div>
+            </div>
+
+            <div class="jawi-word" id="jawi-word">Loading...</div>
+
+            <div class="timer-container">
+                <div class="timer-bar">
+                    <div class="timer-fill" id="timer-fill"></div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <input type="text" class="rumi-input" id="rumi-input" placeholder="Type Rumi transliteration..." maxlength="50">
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results" id="results">
+            <div class="final-score">
+                Final Score: <span id="final-score">0</span>/20
+            </div>
+            
+            <div class="wrong-words" id="wrong-words-section">
+                <h3>Words to Review:</h3>
+                <div id="wrong-words-list"></div>
+            </div>
+
+            <button class="restart-btn" onclick="showMenu()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameData = [];
+        let currentMode = '';
+        let currentWordIndex = 0;
+        let score = 0;
+        let wrongWords = [];
+        let timeLeft = 5;
+        let timer = null;
+        let currentWord = null;
+
+        // Load CSV data
+        async function loadGameData() {
+            try {
+                const response = await fetch('data/rumi-jawi.csv');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load CSV file: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                const lines = csvText.trim().split('\n');
+                const data = [];
+                
+                // Skip header row and parse data
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line) {
+                        // Simple CSV parsing - handles basic cases
+                        const parts = line.split(',');
+                        if (parts.length >= 2) {
+                            const rumi = parts[1].trim().replace(/"/g, '');
+                            const jawi = parts[2].trim().replace(/"/g, '');
+                            
+                            if (rumi && jawi) {
+                                // Row index represents frequency rank (1st row = most frequent)
+                                data.push({ rumi, jawi, index: i - 1 });
+                            }
+                        }
+                    }
+                }
+                
+                if (data.length === 0) {
+                    throw new Error('No valid data found in CSV file');
+                }
+                
+                gameData = data;
+                console.log(`Loaded ${gameData.length} word pairs`);
+                return true;
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                alert(`Error loading data file: ${error.message}\n\nPlease ensure 'data/rumi-jawi.csv' exists and is properly formatted.`);
+                return false;
+            }
+        }
+
+        // Get words for selected mode
+        function getWordsForMode(mode) {
+            if (mode === 'easy') {
+                // First 100 most frequent words (index 0-99)
+                return gameData.filter(word => word.index < 100);
+            } else {
+                // Words from 100 onward (index 100+)
+                return gameData.filter(word => word.index >= 100);
+            }
+        }
+
+        // Shuffle array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Start game
+        async function startGame(mode) {
+            if (gameData.length === 0) {
+                await loadGameData();
+            }
+
+            currentMode = mode;
+            const modeWords = getWordsForMode(mode);
+            
+            if (modeWords.length < 20) {
+                alert(`Not enough words for ${mode} mode. Need at least 20 words. Found ${modeWords.length} words.`);
+                return;
+            }
+
+            // Randomly select 20 words from available words
+            const selectedWords = [];
+            const availableWords = [...modeWords]; // Create a copy
+            
+            for (let i = 0; i < 20; i++) {
+                const randomIndex = Math.floor(Math.random() * availableWords.length);
+                selectedWords.push(availableWords[randomIndex]);
+                // Remove selected word to avoid duplicates
+                availableWords.splice(randomIndex, 1);
+            }
+
+            console.log(`Selected ${selectedWords.length} words for ${mode} mode`);
+
+            // Reset game state
+            currentWordIndex = 0;
+            score = 0;
+            wrongWords = [];
+            
+            // Store selected words
+            window.gameWords = selectedWords;
+
+            // Switch to game screen
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            // Start first word
+            showNextWord();
+        }
+
+        // Show next word
+        function showNextWord() {
+            if (currentWordIndex >= 20) {
+                endGame();
+                return;
+            }
+
+            currentWord = window.gameWords[currentWordIndex];
+            
+            // Update UI
+            document.getElementById('word-number').textContent = currentWordIndex + 1;
+            document.getElementById('current-score').textContent = score;
+            document.getElementById('jawi-word').textContent = currentWord.jawi;
+            document.getElementById('rumi-input').value = '';
+            document.getElementById('rumi-input').disabled = false;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+
+            // Focus input
+            document.getElementById('rumi-input').focus();
+
+            // Start timer
+            startTimer();
+        }
+
+        // Start timer
+        function startTimer() {
+            timeLeft = 5;
+            updateTimerBar();
+            
+            timer = setInterval(() => {
+                timeLeft -= 0.1;
+                updateTimerBar();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleTimeout();
+                }
+            }, 100);
+        }
+
+        // Update timer bar
+        function updateTimerBar() {
+            const percentage = (timeLeft / 5) * 100;
+            document.getElementById('timer-fill').style.width = percentage + '%';
+        }
+
+        // Handle input
+        document.getElementById('rumi-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleAnswer();
+            }
+        });
+
+        // Handle answer
+        function handleAnswer() {
+            if (!currentWord || timer === null) return;
+
+            clearInterval(timer);
+            
+            const userAnswer = document.getElementById('rumi-input').value.trim().toLowerCase();
+            const correctAnswer = currentWord.rumi.toLowerCase();
+            
+            document.getElementById('rumi-input').disabled = true;
+
+            if (userAnswer === correctAnswer) {
+                score++;
+                showFeedback('Correct! ✓', 'correct');
+            } else {
+                wrongWords.push({
+                    jawi: currentWord.jawi,
+                    rumi: currentWord.rumi,
+                    userAnswer: userAnswer
+                });
+                showFeedback(`Incorrect. Answer: ${currentWord.rumi}`, 'incorrect');
+            }
+
+            // Move to next word after delay
+            setTimeout(() => {
+                currentWordIndex++;
+                showNextWord();
+            }, 2000);
+        }
+
+        // Handle timeout
+        function handleTimeout() {
+            if (!currentWord) return;
+
+            document.getElementById('rumi-input').disabled = true;
+            
+            wrongWords.push({
+                jawi: currentWord.jawi,
+                rumi: currentWord.rumi,
+                userAnswer: 'timeout'
+            });
+            
+            showFeedback(`Time's up! Answer: ${currentWord.rumi}`, 'timeout');
+
+            // Move to next word after delay
+            setTimeout(() => {
+                currentWordIndex++;
+                showNextWord();
+            }, 2000);
+        }
+
+        // Show feedback
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+        }
+
+        // End game
+        function endGame() {
+            // Clear any running timer
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+
+            // Switch to results screen
+            document.getElementById('game').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+
+            // Show final score
+            document.getElementById('final-score').textContent = score;
+
+            // Show wrong words if any
+            if (wrongWords.length > 0) {
+                document.getElementById('wrong-words-section').style.display = 'block';
+                const wrongWordsList = document.getElementById('wrong-words-list');
+                wrongWordsList.innerHTML = '';
+
+                wrongWords.forEach(word => {
+                    const item = document.createElement('div');
+                    item.className = 'wrong-word-item';
+                    item.innerHTML = `
+                        <div class="wrong-jawi">${word.jawi}</div>
+                        <div class="wrong-rumi">${word.rumi}</div>
+                    `;
+                    wrongWordsList.appendChild(item);
+                });
+            } else {
+                document.getElementById('wrong-words-section').style.display = 'none';
+            }
+        }
+
+        // Show menu
+        function showMenu() {
+            document.getElementById('menu').style.display = 'block';
+            document.getElementById('game').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            
+            // Clear any running timer
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        // Load data when page loads
+        window.addEventListener('load', loadGameData);
+    </script>
+</body>
+</html>

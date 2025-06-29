@@ -345,8 +345,8 @@
                         // Simple CSV parsing - handles basic cases
                         const parts = line.split(',');
                         if (parts.length >= 2) {
-                            const rumi = parts[0].trim().replace(/"/g, '');
-                            const jawi = parts[2].trim().replace(/"/g, '');
+                            const rumi = parts[1].trim().replace(/"/g, '');
+                            const jawi = parts[3].trim().replace(/"/g, '');
                             
                             if (rumi && jawi) {
                                 // Row index represents frequency rank (1st row = most frequent)
